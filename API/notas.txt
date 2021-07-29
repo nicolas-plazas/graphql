@@ -1,0 +1,15 @@
+-- Estructura de una consulta en GraphQL
+{
+  getCourse(id: "anyId2") {
+    title
+    teacher
+    topic
+    description
+  }
+}
+
+    // getCourse: (root, args) => {
+    //     const course = courses.find((course) => course._id === args.id)
+    //     // course.pop() - devuelve el primer puesto de un arreglo
+    //     return course
+    // }

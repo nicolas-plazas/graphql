@@ -1,0 +1,258 @@
+// MUTATION CREAR CURSO
+mutation {
+  createCourse(input: {
+    title: "Curso de GraphQL"
+    teacher: "Nicolás Plazas"
+    description: "Curso donde aprenderas GraphQL desde los básico hasta lo más complejo"
+    topic: "React JS"
+  }){
+    _id
+    title
+    teacher
+    description
+    topic
+  }
+}
+
+<--- ACTUALIZAR CURSO --->
+//Se pasa el id y el "input" que contiene un objeto con los elementos a modificar
+mutation {
+  editCourse(_id: "6001fa137441c6ac5ad595a1", input: {
+    title: "React JS"
+  }){
+    _id
+    title
+  }
+}
+
+<--- Eliminar Curso --->
+mutation {
+  deleteCourse(_id: "6001fa137441c6ac5ad595a3")
+}
+
+<--  CREAR ESTUDIANTE -->
+mutation {
+  createStudent(input: {
+    name: "Estudiante 2"
+    email: "estudiante2@gmail.com"
+  }){
+    _id
+    name
+    email
+  }
+}
+
+<--- Obtener estudiante --->
+{
+  getStudent(id: "60214a72ef4f444d0412080a") {
+    _id
+    name
+    email
+  }
+}
+
+<--- Actualizar estudiante --->
+mutation {
+  editStudent(_id: "60214a72ef4f444d0412080a", input: {
+    name: "John Doe"
+    email: "johndoe@gmail.com"
+  }){
+    _id
+    name
+    email
+  }
+}
+
+<--- CURSOS CON ESTUDIANTES --->
+mutation {
+  addPeople(courseID: "6001fa137441c6ac5ad595a1", personID: "60214a52ef4f444d04120809"){
+    _id
+    title
+  }
+}
+
+<--- ALIAS --->
+{
+  AllCourses: getCourses {
+    _id
+    title
+  }
+
+  Course1: getCourse(id: "6021367dd2bd6830388c0d04") {
+    _id
+    title
+    description
+  }
+
+  Course2: getCourse(id: "6021771d2a8ac4436085562d") {
+    title
+    description
+    topic
+  }
+}
+
+<--- FRAGMENTS --->
+/*
+  Resumir el código
+  Capacidad de encapsular una consulta reutilizable en los demas queries
+*/
+
+{
+  AllCourses: getCourses {
+    ...CourseFields
+  }
+
+  Course1: getCourse(id: "6021367dd2bd6830388c0d04") {
+    ...CourseFields
+    teacher
+  }
+
+  Course2: getCourse(id: "6021771d2a8ac4436085562d") {
+    ...CourseFields
+    topic
+  }
+}
+
+fragment CourseFields on Course {
+  _id
+  title
+  description
+  people {
+  	_id
+  	name
+	}
+}
+
+<--- Ejemplo de consulta con fragments 2 --->
+//Entrega todas las personas estudiantes y monitores, solo que trae el "phone", cuando el usuario es monitor
+{
+  getPeople{
+    _id
+    name
+    email
+    ... on Monitor {
+      phone
+    }
+    ... on Student {
+      avatar
+    }
+  }
+}
+
+<--- VARIABLES --->
+// Una variable se simboliza mediante el signo $
+mutation AddPersonToCourse ($course: ID!, $person: ID!){
+  addPeople(courseID: $course, personID: $person){
+    _id
+    title
+  }
+}
+
+// QUERY VARIABLE - Es la forma de pasar los datos al query
+{
+  "course": "6021367dd2bd6830388c0d04",
+  "person": "6021ac4c9c6d2e2e98f43ebf"
+}
+
+<--- Otro ejemplo de variable --->
+query GetSCourse ($course: ID!) {
+  getCourse(id: $course){
+  	_id
+    title
+    people {
+      _id
+      name
+    }
+  }
+}
+
+{
+  "course": "6021367dd2bd6830388c0d04"
+}
+
+<--- ENUMS -->
+// Usar campos con valores especificos válidados por GraphQL
+
+mutation CreateNewCourse($createInput: CourseInput!) {
+  createCourse(input: $createInput) {
+    _id
+    title
+  }
+}
+
+{
+  "createInput": {
+    "title": "Data Science",
+    "teacher": "Juan",
+    "description": "Curso de data Science",
+    "topic": "Programación",
+    "level": "principiante"
+  }
+}
+
+<--- Monitor --->
+mutation createNewMonitor($monitorInput: PersonInput!){
+  createPerson(input: $monitorInput) {
+    _id
+    name
+  }
+}
+<--- Query Variables --->
+{
+  "monitorInput": {
+    "name": "Monitor 1",
+    "email": "monitor1@gmail.com",
+    "phone": "3004442020"
+  }
+}
+
+<--- DIRECTIVAS (VALIDACIONES) --->
+query getPeopleData($monitor: Boolean!, $avatar: Boolean!){
+  getPeople{
+    _id
+    name
+    email
+    ... on Monitor @include(if: $monitor) {
+      phone
+    }
+    ... on Student @include(if: $avatar) {
+      avatar
+    }
+  }
+}
+
+<--- Query Variables --->
+{
+  "monitor": false,
+  "avatar": true
+}
+
+<--- CREAR INDEX O INDICE SOBRE CUALQUIER CAMPO (MongoDB) --->
+db.<collection>.createIndex({"$**": "text"})
+
+<--- UNIONS --->
+
+/*
+  Unions permite agrupar varios custom types sin importar si tienen algo en común, su sintaxis es la siguiente:
+
+  union SearchResult = CustomType1 | CustomType2 | CustomType3
+  Al momento de realizar una query que retorna una union podemos identificar el tipo de dato solicitando el campo __typename.
+*/
+
+{
+  searchItems(keyword: "1") {
+    __typename
+    ... on Course {
+      title
+      description
+    }
+    ... on Monitor {
+      name
+      phone
+    }
+    ... on Student {
+      name
+      email
+    }
+  }
+}

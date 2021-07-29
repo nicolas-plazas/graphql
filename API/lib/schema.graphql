@@ -1,0 +1,103 @@
+# Válida los tipos de nivel
+enum Level {
+    principiante
+    intermedio
+    avanzado
+}
+
+union GlobalSearch = Course | Student | Monitor
+
+# tipo personalizado
+type Course {
+    _id: ID!
+    title: String!
+    teacher: String
+    description: String!
+    # Este campo no va a estra disponible en un futuro
+    topic: String @deprecated
+    people: [Student]
+    level: Level
+}
+
+# Las interfaces son muy importantes y útiles cuando nos encontramos con tipos de datos similares.
+# Una interfaz nos permite definir un tipo de dato padre que utilizando la palabra implements va a
+# implementar los campos que tenga definidos dentro del tipo de dato que queramos.
+interface Person {
+    _id: ID!
+    name: String!
+    email: String!
+}
+
+type Student implements Person {
+    _id: ID!
+    name: String!
+    email: String!
+    avatar: String
+}
+
+type Monitor implements Person {
+    _id: ID!
+    name: String!
+    email: String!
+    phone: String
+}
+
+type Query {
+    # Devuelve todos los cursos
+    getCourses: [Course]
+    # Devuelve un curso - nota ! significa campo obligatorio
+    getCourse(id: ID!): Course
+    # Devuelve todos los estudiantes
+    getPeople: [Person]
+    # Devuelve un estudiante
+    getPerson(id: ID!): Person
+    # Ejecuta una búsqueda global
+    searchItems(keyword: String!) : [GlobalSearch]
+}
+
+# Las interfaces son muy importantes y útiles cuando nos encontramos con tipos de datos similares. Una interfaz nos permite definir un tipo de dato padre que utilizando la palabra implements va a implementar los campos que tenga definidos dentro del tipo de dato que queramos.
+input CourseInput {
+    title: String!
+    teacher: String
+    description: String!
+    topic: String
+    level: Level
+}
+
+input CourseEditInput {
+    title: String
+    teacher: String
+    description: String
+    topic: String
+}
+
+input PersonInput {
+    name: String!
+    email: String!
+    phone: String
+    avatar: String
+}
+
+input PersonEditInput {
+    name: String
+    email: String
+    phone: String
+    avatar: String
+}
+
+type Mutation {
+    # Insertar un curso
+    createCourse(input: CourseInput!): Course
+    # Edita un curso
+    editCourse(_id: ID!, input: CourseEditInput): Course
+    # Eliminar un curso
+    deleteCourse(_id: ID!): String
+    # Insertar una pesona
+    createPerson(input: PersonInput!): Person
+    # Edita una persona
+    editPerson(_id: ID!, input: PersonEditInput): Person
+    # Eliminar una persona
+    deletePerson(_id: ID!): String
+    # Agrega una persona a un curso
+    addPeople(courseID: ID!, personID: ID!): Course
+}
